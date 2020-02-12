@@ -9,3 +9,5 @@ events.out.tfevents.**
 im.zip
 seg_results.pkl
 !controller.pyc
+
+condaenv.csfqvvbt.requirements.txt
