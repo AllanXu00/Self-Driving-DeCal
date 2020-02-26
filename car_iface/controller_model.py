@@ -39,11 +39,11 @@ class Car_Interface():
         All except for the brake_weight should be positive.
         '''
         #Coefficients corresponding to the motion dynamics
-        self.rolling_bias = 0.009948726292356247
-        self.friction_constant = 0.1098788958428207
+        self.rolling_bias = 0.010026350482403114
+        self.friction_constant = 0.1101003773386885
 
-        self.accelerator_weight = 0.10002000669212774
-        self.brake_weight = -0.24991289140138043
+        self.accelerator_weight = 0.09999785376940937
+        self.brake_weight = -0.2495182751695796
 
 
         '''
