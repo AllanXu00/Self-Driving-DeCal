@@ -157,12 +157,12 @@ if __name__ == "__main__":
         or compute target orientations for the car at each waypoint.
     '''
     Q = tf.constant([
-        [0, 0, 0],
-        [0, 0, 0],
+        [1.5, 0, 0],
+        [0, 1.5, 0],
         [0, 0, 0]], dtype=tf.float32)
     R = tf.constant([
-        [0, 0],
-        [0, 0]], dtype=tf.float32)
+        [1.2, 0],
+        [0, 0.05]], dtype=tf.float32)
 
     # Compute (c = xT Q x + uT R u) by concatenating x with u, and using one big matrix
     cost_model = Quadratic(0, [0, 0], [0, 0], [[Q, 0], [0, R]])
