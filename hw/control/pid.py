@@ -25,12 +25,17 @@ Action: [velocity, steering angle]
 '''
 class PID(ControlLoop):
 
-    def __init__(self, waypoints, dt, threshold=0.1, debug=False): # Feel free to add more arguments
+    def __init__(self, k_pos, k_ang, waypoints, dt, threshold=0.1, debug=False): # Feel free to add more arguments
         ControlLoop.__init__(self, waypoints=waypoints, dt=dt, threshold=threshold, debug=debug)
 
         ######################################
         #       Initialize PID constants     #
         ######################################
+        self.dt = dt
+        self.k_pos = k_pos
+        self.k_ang = k_ang
+        self.prev_error = None
+        self.I = np.array([0.0, 0.0])
 
     '''
     Use 2 PID loops (one for throttle, one for steering)
@@ -65,10 +70,24 @@ class PID(ControlLoop):
         Note: Keeping error, constants, and action as 2-long np vectors will make code neat!
         Make helper functions or instance variables as needed
         '''
-        error = None
-        action = None
+
+        pos_error = np.linalg.norm(self.cur_waypoint - cur_pos)
+        ang_goal = angle_to_goal(self.cur_waypoint, cur_pos)
+        ang_error = ang_goal - cur_angle
+        ang_error = (ang_error + np.pi) % (2 * np.pi) - np.pi
+        error = np.array([pos_error, ang_error])
+        errorD = np.array([0.0, 0.0])
+        if self.prev_error is not None: 
+            errorD = (error - self.prev_error) / self.dt
+        self.I += error * self.dt
+        pos_action = np.dot(self.k_pos, np.array([error[0], errorD[0], self.I[0]]))
+        ang_action = np.dot(self.k_ang, np.array([error[1], errorD[1], self.I[1]]))
+        self.prev_error = error
+        action = np.array([pos_action, ang_action])
 
         if self.debug:
+            print(cur_angle, ang_goal)
+            print(np.array([error[1], errorD[1], self.I[1]]))
             print("State: {}, Waypoint: {}, Action: {}".format(state, self.cur_waypoint, action))
         return action
 
@@ -82,6 +101,8 @@ class PID(ControlLoop):
         Reset PID terms each time a waypoint is set
         If not reset, derivative term will spike
         '''
+        self.prev_error = None
+        self.I = np.array([0.0, 0.0])
 
     # Make more methods if you wish!
 
@@ -94,7 +115,7 @@ if __name__ == "__main__":
     env.render(top_down=True)
 
     # TODO: Pass any args you need
-    control_loop = PID(..., waypoints=trajectory, dt=env.delta_time, threshold=0.1, debug=True)
+    control_loop = PID(np.array([0.2, 0.03, 0.2]), np.array([1.5, 0.01, 0.2]), waypoints=trajectory, dt=env.delta_time, threshold=0.1, debug=True)
 
     while not control_loop.is_finished:
         cur_pos = [env.cur_pos[0], env.cur_pos[2]]
